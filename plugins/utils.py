@@ -30,7 +30,6 @@ class STS:
             "duplicate": 0,
             "total": limit,
             "start": tm.time(),
-            # Forward engine (RAM only)
             "batch": True,
             "batch_size": 100,
             "batch_delay": 10,
@@ -65,38 +64,23 @@ class STS:
         by = 1 if int(by) == 0 else by 
         return int(no) / by 
 
-    # -------- Auto Resume / Pause Logic --------
-    def pause(self):
-        self.data[self.id]["paused"] = True
-
-    def resume(self):
-        self.data[self.id]["paused"] = False
-
-    def is_paused(self):
-        return self.get("paused")
-
     def save_last(self, msg_id):
         self.data[self.id]["last_id"] = msg_id
 
     def get_last(self):
         return self.get("last_id")
-    # ------------------------------------------
 
     async def get_data(self, user_id):
         bot = await db.get_bot(user_id)
         k, filters = self, await db.get_filters(user_id)
         size, configs = None, await db.get_configs(user_id)
-
         if configs['duplicate']:
             duplicate = [configs['db_uri'], self.TO]
         else:
             duplicate = False
-
         button = parse_buttons(configs['button'] if configs['button'] else '')
-
         if configs['file_size'] != 0:
             size = [configs['file_size'], configs['size_limit']]
-
         return (
             bot,
             configs['caption'],
@@ -104,7 +88,7 @@ class STS:
             {
                 'chat_id': k.FROM,
                 'limit': k.limit,
-                'offset': k.get_last(),   # Use saved last_id for auto-resume
+                'offset': k.get_last(),
                 'filters': filters,
                 'keywords': configs['keywords'],
                 'media_size': size,
