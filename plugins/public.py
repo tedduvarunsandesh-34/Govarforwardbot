@@ -1,64 +1,41 @@
-# Jishu Developer 
-# Patched for Manual ID Entry
-
-import asyncio
-from .utils import STS
-from database import db
-from config import temp
-from translation import Translation
 from pyrogram import Client, filters
-from pyrogram.types import (
-    InlineKeyboardButton, InlineKeyboardMarkup, 
-    ReplyKeyboardRemove
-)
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from .utils import STS
 
-@Client.on_message(filters.private & filters.command(["fwd", "forward"]))
+@Client.on_message(filters.private & filters.command("forward"))
 async def run(bot, message):
     user_id = message.from_user.id
     
-    # 1. Check Bot
-    _bot = await db.get_bot(user_id)
-    if not _bot:
-        return await message.reply("Please add a bot in /settings first.")
+    # 1. Manual ID Entry
+    src = await bot.ask(message.chat.id, "🆔 **Enter Source Chat ID:**")
+    dest = await bot.ask(message.chat.id, "🆔 **Enter Destination Chat ID:**")
+    skip = await bot.ask(message.chat.id, "🔢 **Enter Start Message ID:**")
+    lim = await bot.ask(message.chat.id, "📊 **How many messages to forward?**")
 
-    # 2. Ask for Source Chat ID
-    src_msg = await bot.ask(message.chat.id, "⬇️ **Enter the Source Chat ID:**\n(Example: `-100123456789` or `username`)", filters=filters.text)
-    if src_msg.text.startswith("/"): return await message.reply("Cancelled.")
-    source_chat = src_msg.text
+    fid = f"{user_id}-{message.id}"
+    STS(fid).store(src.text, dest.text, int(skip.text), int(lim.text))
 
-    # 3. Ask for Destination Chat ID
-    dest_msg = await bot.ask(message.chat.id, "⬆️ **Enter the Destination Chat ID:**\n(Example: `-100987654321` or `my_channel`)", filters=filters.text)
-    if dest_msg.text.startswith("/"): return await message.reply("Cancelled.")
-    destination_chat = dest_msg.text
+    buttons = [[
+        InlineKeyboardButton("⚡ Single", callback_data=f"mode_single_{fid}"),
+        InlineKeyboardButton("📦 Batch", callback_data=f"mode_batch_{fid}")
+    ]]
+    await message.reply("📋 **Select Mode:**", reply_markup=InlineKeyboardMarkup(buttons))
 
-    # 4. Ask for Start Message ID (Skip)
-    skip_msg = await bot.ask(message.chat.id, "🔢 **Enter the Start Message ID:**\n(From which message do you want to start?)", filters=filters.text)
-    if not skip_msg.text.isdigit(): return await message.reply("Invalid ID. Must be a number.")
-    start_id = int(skip_msg.text)
+@Client.on_callback_query(filters.regex("^mode_"))
+async def set_mode(bot, q):
+    _, mode, fid = q.data.split("_")
+    STS(fid).set("mode", mode)
+    btns = [[
+        InlineKeyboardButton("50/5s", f"speed_{fid}_50_5"),
+        InlineKeyboardButton("100/10s", f"speed_{fid}_100_10")
+    ],[
+        InlineKeyboardButton("▶️ START", f"start_public_{fid}")
+    ]]
+    await q.message.edit("🚀 **Select Speed:**", reply_markup=InlineKeyboardMarkup(btns))
 
-    # 5. Ask for Total Limit
-    limit_msg = await bot.ask(message.chat.id, "🛑 **How many messages to forward?**\n(Enter a number, e.g., `500`)", filters=filters.text)
-    if not limit_msg.text.isdigit(): return await message.reply("Invalid Limit.")
-    limit = int(limit_msg.text)
-
-    # 6. Store Data and Show Mode Selection
-    forward_id = f"{user_id}-{message.id}"
-    STS(forward_id).store(source_chat, destination_chat, start_id, limit)
-
-    buttons = [
-        [
-            InlineKeyboardButton("⚡ Single Mode", callback_data=f"mode_single_{forward_id}"),
-            InlineKeyboardButton("📦 Batch Mode", callback_data=f"mode_batch_{forward_id}")
-        ],
-        [InlineKeyboardButton("✖️ Cancel", callback_data="close_btn")]
-    ]
-
-    await message.reply_text(
-        f"📋 **Forwarding Setup**\n\n"
-        f"FROM: `{source_chat}`\n"
-        f"TO: `{destination_chat}`\n"
-        f"START ID: `{start_id}`\n"
-        f"LIMIT: `{limit}`\n\n"
-        "Select your mode to set speed:",
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
+@Client.on_callback_query(filters.regex("^speed_"))
+async def set_speed(bot, q):
+    _, fid, sz, dl = q.data.split("_")
+    STS(fid).set("batch_size", int(sz))
+    STS(fid).set("batch_delay", int(dl))
+    await q.answer("Speed set!", show_alert=True)
