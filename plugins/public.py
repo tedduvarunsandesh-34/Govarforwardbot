@@ -1,5 +1,7 @@
 # Jishu Developer 
-# Patched public.py
+# Don't Remove Credit 🥺
+# Telegram Channel @Madflix_Bots
+# Developer @JishuDeveloper
 
 import re
 import asyncio
@@ -15,28 +17,26 @@ async def run(bot, message):
     user_id = message.from_user.id
     _bot = await db.get_bot(user_id)
     if not _bot:
-        return await message.reply("Add a bot in /settings first!")
-
+        return await message.reply("You Did Not Added Any Bot. Please Add A Bot Using /settings !")
     channels = await db.get_user_channels(user_id)
     if not channels:
-        return await message.reply_text("Set a target channel in /settings!")
+        return await message.reply_text("Please Set A To Channel In /settings Before Forwarding")
 
-    # Multi-channel selection logic
     if len(channels) > 1:
         btn = [[KeyboardButton(c['title'])] for c in channels]
         btn.append([KeyboardButton("cancel")])
         _to = await bot.ask(message.chat.id, Translation.TO_MSG.format(_bot['name'], _bot['username']), 
                            reply_markup=ReplyKeyboardMarkup(btn, one_time_keyboard=True, resize_keyboard=True))
-        if _to.text.lower() == "cancel": return await message.reply("Cancelled.", reply_markup=ReplyKeyboardRemove())
+        if _to.text.lower() == "cancel": return await message.reply(Translation.CANCEL, reply_markup=ReplyKeyboardRemove())
         target = next((c for c in channels if c['title'] == _to.text), None)
+        if not target: return await message.reply("Wrong Choice!")
         toid, to_title = target['chat_id'], target['title']
     else:
         toid, to_title = channels[0]['chat_id'], channels[0]['title']
 
     fromid = await bot.ask(message.chat.id, Translation.FROM_MSG, reply_markup=ReplyKeyboardRemove())
-    if fromid.text and fromid.text.startswith('/'): return
+    if fromid.text and fromid.text.startswith('/'): return await message.reply(Translation.CANCEL)
 
-    # Link Parsing
     if fromid.text and not fromid.forward_date:
         regex = re.compile(r"(https://)?(t\.me/|telegram\.me/|telegram\.dog/)(c/)?(\d+|[a-zA-Z_0-9]+)/(\d+)$")
         match = regex.match(fromid.text.replace("?single", ""))
@@ -64,7 +64,7 @@ async def set_mode(bot, q):
     _, mode, fid = q.data.split("_")
     sts = STS(fid)
     sts.set("mode", mode)
-    await q.message.edit_text("<b>Select Speed:</b>", reply_markup=InlineKeyboardMarkup([
+    await q.message.edit_text("<b>Choose Speed:</b>", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("50/5s", f"speed_{fid}_50_5"),
          InlineKeyboardButton("100/10s", f"speed_{fid}_100_10"),
          InlineKeyboardButton("200/20s", f"speed_{fid}_200_20")],
@@ -74,7 +74,6 @@ async def set_mode(bot, q):
 @Client.on_callback_query(filters.regex("^speed_"))
 async def set_speed(bot, q):
     _, fid, size, delay = q.data.split("_")
-    sts = STS(fid)
-    sts.set("batch_size", int(size))
-    sts.set("batch_delay", int(delay))
-    await q.answer(f"Speed: {size} msgs / {delay}s", show_alert=True)
+    STS(fid).set("batch_size", int(size))
+    STS(fid).set("batch_delay", int(delay))
+    await q.answer(f"Speed set to {size} per {delay}s", show_alert=True)
