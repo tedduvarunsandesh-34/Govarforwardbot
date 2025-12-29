@@ -1,12 +1,31 @@
-FROM python:3.8-slim-buster
+FROM python:3.8-slim-bullseye
 
-RUN apt update && apt upgrade -y
-RUN apt install git -y
-COPY requirements.txt /requirements.txt
+# Avoid interactive apt
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN cd /
-RUN pip3 install -U pip && pip3 install -U -r requirements.txt
-RUN JishuDeveloper /Ultra-Forward-Bot
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    bash \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /Ultra-Forward-Bot
+
+# Copy requirements first (better cache)
+COPY requirements.txt .
+
+# Upgrade pip & install python deps
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Clone your bot repo
+RUN git clone https://github.com/JishuDeveloper/Ultra-Forward-Bot.git .
+
+# Copy start script
 COPY start.sh /start.sh
-CMD ["/bin/bash", "/start.sh"] 
+RUN chmod +x /start.sh
+
+# Start the bot
+CMD ["/bin/bash", "/start.sh"]
