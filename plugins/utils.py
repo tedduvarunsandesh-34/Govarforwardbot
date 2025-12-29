@@ -1,7 +1,6 @@
 # Jishu Developer 
 # Don't Remove Credit 🥺
 # Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
 import time as tm
@@ -31,13 +30,13 @@ class STS:
             "duplicate": 0,
             "total": limit,
             "start": tm.time(),
-
             # Forward engine (RAM only)
             "batch": True,
             "batch_size": 100,
             "batch_delay": 10,
             "last_id": skip,
-            "paused": False
+            "paused": False,
+            "mode": "batch"
         }
         self.get(full=True)
         return STS(self.id)
@@ -52,6 +51,10 @@ class STS:
             setattr(self, k, v)
         return self
 
+    def set(self, key, value):
+        if self.id in self.data:
+            self.data[self.id][key] = value
+
     def add(self, key=None, value=1, time=False):
         if time:
             self.data[self.id]["start"] = tm.time()
@@ -62,7 +65,7 @@ class STS:
         by = 1 if int(by) == 0 else by 
         return int(no) / by 
 
-    # -------- Auto Resume / Pause --------
+    # -------- Auto Resume / Pause Logic --------
     def pause(self):
         self.data[self.id]["paused"] = True
 
@@ -77,8 +80,7 @@ class STS:
 
     def get_last(self):
         return self.get("last_id")
-
-    # ------------------------------------
+    # ------------------------------------------
 
     async def get_data(self, user_id):
         bot = await db.get_bot(user_id)
@@ -102,7 +104,7 @@ class STS:
             {
                 'chat_id': k.FROM,
                 'limit': k.limit,
-                'offset': k.get_last(),   # auto-resume offset
+                'offset': k.get_last(),   # Use saved last_id for auto-resume
                 'filters': filters,
                 'keywords': configs['keywords'],
                 'media_size': size,
@@ -113,21 +115,13 @@ class STS:
             button
         )
 
-
 def get_readable_time(seconds: int) -> str:
     result = ""
     (days, remainder) = divmod(seconds, 86400)
-    days = int(days)
-    if days != 0:
-        result += f"{days}d"
+    if days: result += f"{int(days)}d"
     (hours, remainder) = divmod(remainder, 3600)
-    hours = int(hours)
-    if hours != 0:
-        result += f"{hours}h"
+    if hours: result += f"{int(hours)}h"
     (minutes, seconds) = divmod(remainder, 60)
-    minutes = int(minutes)
-    if minutes != 0:
-        result += f"{minutes}m"
-    seconds = int(seconds)
-    result += f"{seconds}s"
+    if minutes: result += f"{int(minutes)}m"
+    result += f"{int(seconds)}s"
     return result
