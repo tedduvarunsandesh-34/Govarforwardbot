@@ -4,10 +4,8 @@
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
-
-
-
 import time as tm
+import asyncio 
 from database import db 
 from .test import parse_buttons
 
@@ -21,9 +19,22 @@ class STS:
     def verify(self):
         return self.data.get(self.id)
     
-    def store(self, From, to,  skip, limit):
-        self.data[self.id] = {"FROM": From, 'TO': to, 'total_files': 0, 'skip': skip, 'limit': limit,
-                      'fetched': skip, 'filtered': 0, 'deleted': 0, 'duplicate': 0, 'total': limit, 'start': 0}
+    def store(self, From, to, skip, limit):
+        # We store the 'limit' as the total count to process
+        # We store 'skip' as the starting offset
+        self.data[self.id] = {
+            "FROM": From, 
+            'TO': to, 
+            'total_files': 0, 
+            'skip': skip, 
+            'limit': limit,
+            'fetched': skip, 
+            'filtered': 0, 
+            'deleted': 0, 
+            'duplicate': 0, 
+            'total': limit + skip, # Total calculation fixed for progress bar accuracy
+            'start': 0
+        }
         self.get(full=True)
         return STS(self.id)
         
@@ -38,25 +49,45 @@ class STS:
     def add(self, key=None, value=1, time=False):
         if time:
           return self.data[self.id].update({'start': tm.time()})
-        self.data[self.id].update({key: self.get(key) + value}) 
+        current_val = self.get(key)
+        self.data[self.id].update({key: current_val + value}) 
     
     def divide(self, no, by):
        by = 1 if int(by) == 0 else by 
        return int(no) / by 
     
     async def get_data(self, user_id):
-        bot = await db.get_bot(user_id)
-        k, filters = self, await db.get_filters(user_id)
-        size, configs = None, await db.get_configs(user_id)
+        # --- SPEED OPTIMIZATION: Parallel Database Fetching ---
+        # Instead of waiting for DB 3 times sequentially, we fetch all at once.
+        task1 = db.get_bot(user_id)
+        task2 = db.get_filters(user_id)
+        task3 = db.get_configs(user_id)
+        
+        # Run all 3 DB queries together
+        bot, filters, (_, configs) = await asyncio.gather(task1, task2, task3)
+        # ------------------------------------------------------
+        
+        size = None
+        duplicate = False
+        
         if configs['duplicate']:
            duplicate = [configs['db_uri'], self.TO]
-        else:
-           duplicate = False
+        
         button = parse_buttons(configs['button'] if configs['button'] else '')
+        
         if configs['file_size'] != 0:
             size = [configs['file_size'], configs['size_limit']]
-        return bot, configs['caption'], configs['forward_tag'], {'chat_id': k.FROM, 'limit': k.limit, 'offset': k.skip, 'filters': filters,
-                'keywords': configs['keywords'], 'media_size': size, 'extensions': configs['extension'], 'skip_duplicate': duplicate}, configs['protect'], button
+            
+        return bot, configs['caption'], configs['forward_tag'], {
+            'chat_id': self.FROM, 
+            'limit': self.limit, 
+            'offset': self.skip, 
+            'filters': filters,
+            'keywords': configs['keywords'], 
+            'media_size': size, 
+            'extensions': configs['extension'], 
+            'skip_duplicate': duplicate
+        }, configs['protect'], button
         
 
 def get_readable_time(seconds: int) -> str:
@@ -77,10 +108,9 @@ def get_readable_time(seconds: int) -> str:
     result += f"{seconds}s"
     return result
 
-
-
 # Jishu Developer 
 # Don't Remove Credit 🥺
 # Telegram Channel @Madflix_Bots
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
+
