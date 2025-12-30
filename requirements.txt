@@ -1,7 +1,8 @@
-pyrofork
+Pyrofork
 motor
 TgCrypto
 Dnspython
 aiohttp
 pytz
 Flask==2.3.3
+
