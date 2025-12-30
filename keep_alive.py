@@ -9,6 +9,7 @@ def home():
     return "Ultra Forward Bot is running!"
 
 def run():
+    # Render/Heroku assigns a dynamic port, default to 8080 if not found
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
 
@@ -16,3 +17,4 @@ def start():
     t = threading.Thread(target=run)
     t.daemon = True
     t.start()
+    
