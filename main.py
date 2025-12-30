@@ -1,13 +1,11 @@
-
-
 import logging
 import logging.config
 
-# Get logging configurations
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# Load the external logging configuration
+logging.config.fileConfig('logging.conf')
+
+# Silence Pyrogram's noisy logs (keep only Warnings/Errors)
+# This ensures your console only shows YOUR bot's important logs
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 from keep_alive import start
