@@ -10,10 +10,9 @@ from pyrogram.raw.all import layer
 from pyrogram.enums import ParseMode
 from pyrogram.errors import FloodWait 
 
-# Setup Logging based on your logging.conf
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger("pyrogram").setLevel(logging.ERROR) # Keep pyrogram quiet
+logging.getLogger("pyrogram").setLevel(logging.ERROR)
 
 class Bot(Client): 
     def __init__(self):
@@ -24,8 +23,9 @@ class Bot(Client):
             plugins={
                 "root": "plugins"
             },
-            workers=50, # High worker count for speed
-            max_concurrent_transmissions=10, # Allow multiple media transfers at once
+            # USE CONFIG VARIABLE HERE
+            workers=Config.WORKERS, 
+            max_concurrent_transmissions=10, 
             bot_token=Config.BOT_TOKEN
         )
         self.log = logging
@@ -42,16 +42,10 @@ class Bot(Client):
         text = "**Bot Restarted !**"
         logging.info(text)
         
-        # --- OPTIMIZED RESTART NOTIFICATION ---
-        # Fetch all users who were forwarding before restart
         users_cursor = await db.get_all_frwd()
         users_list = [user async for user in users_cursor]
         
         if users_list:
-            success = 0
-            failed = 0
-            
-            # Helper function to send notification safely
             async def notify_user(user_data):
                 chat_id = user_data['user_id']
                 try:
@@ -64,14 +58,12 @@ class Bot(Client):
                 except Exception:
                     return False
 
-            # Notify all users simultaneously (Batching)
             tasks = [notify_user(u) for u in users_list]
             results = await asyncio.gather(*tasks)
             
             success = results.count(True)
             failed = results.count(False)
             
-            # Clear the list after notifying
             await db.rmve_frwd(all=True)
             logging.info(f"Restart Notification Stats - Success: {success}, Failed: {failed}")
 
