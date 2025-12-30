@@ -1,13 +1,10 @@
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
-# Developer @JishuDeveloper
+
 
 import os
 import sys
 import asyncio 
-from database import db, mongodb_version
+# FIX: Removed 'mongodb_version' from imports as it was removed from database.py
+from database import db 
 from config import Config, temp
 from platform import python_version
 from translation import Translation
@@ -34,7 +31,6 @@ async def start(client, message):
     
     reply_markup = InlineKeyboardMarkup(main_buttons)
     
-    # OPTIMIZATION: Removed the 2-second sleep and sticker for instant response
     text = Translation.START_TXT.format(user.mention)
     
     await message.reply_text(
@@ -52,7 +48,7 @@ async def restart(client, message):
         text="<i>Trying To Restarting.....</i>",
         quote=True
     )
-    await asyncio.sleep(1) # Reduced sleep from 5s to 1s
+    await asyncio.sleep(1)
     await msg.edit("<i>Server Restarted Successfully ✅</i>")
     os.execl(sys.executable, sys.executable, *sys.argv)
     
@@ -103,8 +99,7 @@ async def status(bot, query):
     users_count, bots_count = await db.total_users_bots_count()
     total_channels = await db.total_channels()
     
-    # FIX: Ensure we display the COUNT of banned users, not the list object itself
-    # This prevents errors if temp.BANNED_USERS is a list [123, 456]
+    # Ensure safe count display
     banned_count = len(temp.BANNED_USERS) if isinstance(temp.BANNED_USERS, list) else temp.BANNED_USERS
     
     await query.message.edit_text(
