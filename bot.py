@@ -1,4 +1,8 @@
-
+# Jishu Developer 
+# Don't Remove Credit 🥺
+# Telegram Channel @Madflix_Bots
+# Backup Channel @JishuBotz
+# Developer @JishuDeveloper
 
 import asyncio
 import logging 
@@ -10,6 +14,7 @@ from pyrogram.raw.all import layer
 from pyrogram.enums import ParseMode
 from pyrogram.errors import FloodWait 
 
+# Setup Logging based on your logging.conf
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
@@ -23,7 +28,6 @@ class Bot(Client):
             plugins={
                 "root": "plugins"
             },
-            # USE CONFIG VARIABLE HERE
             workers=Config.WORKERS, 
             max_concurrent_transmissions=10, 
             bot_token=Config.BOT_TOKEN
@@ -31,7 +35,15 @@ class Bot(Client):
         self.log = logging
 
     async def start(self):
-        await super().start()
+        # --- FIX: Anti-FloodWait Startup ---
+        try:
+            await super().start()
+        except FloodWait as e:
+            logging.warning(f"⚠️ Telegram is making us wait {e.value} seconds. Sleeping...")
+            await asyncio.sleep(e.value + 5)
+            await super().start()
+            logging.info("✅ Login Successful after FloodWait!")
+            
         me = await self.get_me()
         logging.info(f"{me.first_name} with Pyrogram v{__version__} (Layer {layer}) started on @{me.username}.")
         self.id = me.id
