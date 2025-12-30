@@ -4,9 +4,6 @@
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
-
-
-
 import asyncio 
 from database import db
 from config import Config
@@ -15,9 +12,8 @@ from pyrogram import Client, filters
 from .test import get_configs, update_configs, CLIENT, parse_buttons
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-CLIENT = CLIENT()
-
-
+# Initialize Client Instance
+CLIENT_API = CLIENT()
 
 @Client.on_message(filters.private & filters.command(['settings']))
 async def settings(client, message):
@@ -27,14 +23,13 @@ async def settings(client, message):
         reply_markup=main_buttons(),
         quote=True
     )
-    
 
-
-    
 @Client.on_callback_query(filters.regex(r'^settings'))
 async def settings_query(bot, query):
   user_id = query.from_user.id
-  i, type = query.data.split("#")
+  data_parts = query.data.split("#")
+  type = data_parts[1]
+  
   buttons = [[InlineKeyboardButton('🔙 Back', callback_data="settings#main")]]
   
   if type=="main":
@@ -61,16 +56,18 @@ async def settings_query(bot, query):
   
   elif type=="addbot":
      await query.message.delete()
-     bot = await CLIENT.add_bot(bot, query)
-     if bot != True: return
+     # FIX: Renamed result variable to avoid overwriting 'bot' object
+     is_added = await CLIENT_API.add_bot(bot, query)
+     if is_added != True: return
      await query.message.reply_text(
         "<b>Bot Token Successfully Added To Database</b>",
         reply_markup=InlineKeyboardMarkup(buttons))
   
   elif type=="adduserbot":
      await query.message.delete()
-     user = await CLIENT.add_session(bot, query)
-     if user != True: return
+     # FIX: Renamed result variable
+     is_added = await CLIENT_API.add_session(bot, query)
+     if is_added != True: return
      await query.message.reply_text(
         "<b>Session Successfully Added To Database</b>",
         reply_markup=InlineKeyboardMarkup(buttons))
@@ -102,11 +99,22 @@ async def settings_query(bot, query):
          elif not chat_ids.forward_date:
             await chat_ids.delete()
             return await text.edit_text("This Is Not A Forward Message")
+         # FIX: Added check for hidden forwards or unknown chats
+         elif not chat_ids.forward_from_chat:
+            await chat_ids.delete()
+            return await text.edit_text(
+               "<b>Error: Cannot Detect Channel.</b>\n\n"
+               "1. Make sure you are forwarding from a <b>Public Channel</b>.\n"
+               "2. Or make sure I am an <b>Admin</b> in that channel.\n"
+               "3. Check if your 'Forwarded From' privacy setting is hidden.",
+               reply_markup=InlineKeyboardMarkup(buttons)
+            )
          else:
             chat_id = chat_ids.forward_from_chat.id
             title = chat_ids.forward_from_chat.title
             username = chat_ids.forward_from_chat.username
             username = "@" + username if username else "private"
+         
          chat = await db.add_channel(user_id, chat_id, title, username)
          await chat_ids.delete()
          await text.edit_text(
@@ -116,13 +124,13 @@ async def settings_query(bot, query):
          await text.edit_text('Process Has Been Automatically Cancelled', reply_markup=InlineKeyboardMarkup(buttons))
   
   elif type=="editbot": 
-     bot = await db.get_bot(user_id)
-     TEXT = Translation.BOT_DETAILS if bot['is_bot'] else Translation.USER_DETAILS
+     bot_info = await db.get_bot(user_id)
+     TEXT = Translation.BOT_DETAILS if bot_info['is_bot'] else Translation.USER_DETAILS
      buttons = [[InlineKeyboardButton('❌ Remove ❌', callback_data=f"settings#removebot")
                ],
                [InlineKeyboardButton('🔙 Back', callback_data="settings#bots")]]
      await query.message.edit_text(
-        TEXT.format(bot['name'], bot['id'], bot['username']),
+        TEXT.format(bot_info['name'], bot_info['id'], bot_info['username']),
         reply_markup=InlineKeyboardMarkup(buttons))
                                              
   elif type=="removebot":
@@ -326,6 +334,7 @@ async def settings_query(bot, query):
        reply_markup=size_button(size))
   
   elif type.startswith("update_size"):
+    # FIX: Corrected split logic to handle consistent naming
     size = int(query.data.split('-')[1])
     if 0 < size > 2000:
       return await query.answer("Size Limit Exceeded", show_alert=True)
@@ -462,6 +471,7 @@ def extract_btn(datas):
     return btn 
 
 def size_button(size):
+  # FIX: Normalized callback_data (removed inconsistent underscores)
   buttons = [[
        InlineKeyboardButton('+',
                     callback_data=f'settings#update_limit-True-{size}'),
@@ -473,27 +483,27 @@ def size_button(size):
        InlineKeyboardButton('+1',
                     callback_data=f'settings#update_size-{size + 1}'),
        InlineKeyboardButton('-1',
-                    callback_data=f'settings#update_size_-{size - 1}')
+                    callback_data=f'settings#update_size-{size - 1}')
        ],[
        InlineKeyboardButton('+5',
                     callback_data=f'settings#update_size-{size + 5}'),
        InlineKeyboardButton('-5',
-                    callback_data=f'settings#update_size_-{size - 5}')
+                    callback_data=f'settings#update_size-{size - 5}')
        ],[
        InlineKeyboardButton('+10',
                     callback_data=f'settings#update_size-{size + 10}'),
        InlineKeyboardButton('-10',
-                    callback_data=f'settings#update_size_-{size - 10}')
+                    callback_data=f'settings#update_size-{size - 10}')
        ],[
        InlineKeyboardButton('+50',
                     callback_data=f'settings#update_size-{size + 50}'),
        InlineKeyboardButton('-50',
-                    callback_data=f'settings#update_size_-{size - 50}')
+                    callback_data=f'settings#update_size-{size - 50}')
        ],[
        InlineKeyboardButton('+100',
                     callback_data=f'settings#update_size-{size + 100}'),
        InlineKeyboardButton('-100',
-                    callback_data=f'settings#update_size_-{size - 100}')
+                    callback_data=f'settings#update_size-{size - 100}')
        ],[
        InlineKeyboardButton('↩ Back',
                     callback_data="settings#main")
@@ -585,15 +595,6 @@ async def next_filters_buttons(user_id):
        InlineKeyboardButton('🔙 Back', 
                     callback_data="settings#main")
        ]]
-  return InlineKeyboardMarkup(buttons) 
-   
-
-
-
-
-
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
-# Developer @JishuDeveloper
+  return InlineKeyboardMarkup(buttons)
+                            
+                 
