@@ -4,151 +4,154 @@
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
-
-
-
 import os
 from config import Config
 
 class Translation(object):
-  START_TXT = """Hey {}
+    
+  START_TXT = """<b>✨ Welcome {} !</b>
 
-➻ I Am A Advanced Auto Forward Bot
+I am an Advanced <b>Auto Forward Bot</b> designed to handle your bulk forwarding needs efficiently.
+
+🚀 <b>Key Capabilities:</b>
+│ • ⚡ <b>Fast Forwarding</b> (Public & Private)
+│ • 🗑️ <b>Duplicate Removal</b>
+│ • 📝 <b>Custom Captions & Buttons</b>
+│ • 🛡️ <b>Content Protection</b>
+
+<i>Click the <b>Help</b> button below to learn how to use me!</i>
+
+<b>🤖 Bot Made By @Madflix_Bots</b>"""
+
+
+  HELP_TXT = """<b>🛠️ <u>User Guide</u></b>
+
+<b>📚 Available Commands:</b>
+╭─── [ <b>Main Commands</b> ]
+│ <b>/start</b> - Check Bot Status
+│ <b>/forward</b> - Start Forwarding
+│ <b>/unequify</b> - Remove Duplicates
+│ <b>/settings</b> - Configure Settings
+│ <b>/reset</b> - Reset All Settings
+╰───────────────
+
+<b>💎 Premium Features:</b>
+│ • Forward from <b>Private Channels</b> (via Userbot)
+│ • Forward from <b>Restricted Content</b> Channels
+│ • <b>Smart Filtering</b> (Size, Extension, Keywords)
+│ • <b>Custom Captions</b> with placeholders
+│ • <b>Skip Duplicate</b> Media automatically
+
+<i>💡 Tip: Use /settings to configure your Userbot and target channels first!</i>"""
   
-➻ I Can Forward All Message From One Channel To Another Channel 
+  HOW_USE_TXT = """<b>⚠️ <u>Setup Instructions</u></b>
   
-➻ Click Help Button To Know More About Me
-  
-<b>Bot Is Made By @Madflix_Bots</b>"""
+<b>1️⃣ Configuration:</b>
+ • Use <b>/settings</b> to add your <b>Userbot</b> (Session String).
+ • Add your <b>Target Channel</b> in settings.
+ 
+<b>2️⃣ Permissions:</b>
+ • <b>Target Channel:</b> Your Bot (or Userbot) <b>MUST</b> be an Admin.
+ • <b>Source Channel:</b> 
+   - If Public: Bot just needs link.
+   - If Private: Userbot must be a member.
 
-
-  HELP_TXT = """<b><u>🛠️ Help</b></u>
-
-<b><u>📚 Available Commands :</u></b>
-⏣ __/start - Check I'm Alive__ 
-⏣ __/forward - Forward Messages__
-⏣ __/unequify - Delete Duplicate Messages In Channels__
-⏣ __/settings - Configure Your Settings__
-⏣ __/reset - Reset Your Settings__
-
-<b><u>💢 Features :</b></u>
-► __Forward Message From Public Channel To Your Channel Without Admin Permission. If The Channel Is Private Need Admin Permission__
-► __Forward Message From Private Channel To Your Channel By Using Userbot(User Must Be Member In There)__
-► __Custom Caption__
-► __Custom Button__
-► __Support Restricted Chats__
-► __Skip Duplicate Messages__
-► __Filter Type Of Messages__
-► __Skip Messages Based On Extensions & Keywords & Size__
+<b>3️⃣ Start Forwarding:</b>
+ • Use <b>/forward</b> and follow the on-screen prompts.
 """
   
-  HOW_USE_TXT = """<b><u>⚠️ Before Forwarding :</b></u>
+  ABOUT_TXT = """<b>🤖 Bot Information</b>
   
-► __Add A Bot Or Userbot__
-► __Add Atleast One To Channel (Your Bot/Userbot Must Be Admin In There)__
-► __You Can Add Chats Or Bots By Using /settings__
-► __If The **From Channel** Is Private Your Userbot Must Be Member In There Or Your Bot Must Need Admin Permission In There Also__
-► __Then Use /forward To Forward Messages__"""
-  
-  ABOUT_TXT = """<b>🤖 My Name :</b> {}
-<b>📝 Language :</b> <a href='https://python.org'>Python 3</a>
-<b>📚 Library :</b> <a href='https://pyrogram.org'>Pyrogram 2.0</a>
-<b>🚀 Server :</b> <a href='https://heroku.com'>Heroku</a>
-<b>📢 Channel :</b> <a href='https://t.me/Madflix_Bots'>Madflix Botz</a>
-<b>🧑‍💻 Developer :</b> <a href='https://t.me/CallAdminRobot'>Jishu Developer</a>
+╭───────────────
+│ <b>📛 Name:</b> {}
+│ <b>📝 Language:</b> Python 3
+│ <b>📚 Library:</b> Pyrogram 2.0
+│ <b>🚀 Server:</b> Heroku / VPS
+│ <b>📢 Channel:</b> <a href='https://t.me/Madflix_Bots'>Madflix Botz</a>
+│ <b>👨‍💻 Developer:</b> <a href='https://t.me/CallAdminRobot'>Jishu Developer</a>
+╰───────────────
 
-<b>♻️ Bot Made By :</b> @Madflix_Bots"""
+<b>♻️ Powered By @Madflix_Bots</b>"""
   
-  STATUS_TXT = """<b><u>Bot Status</u></b>
+  STATUS_TXT = """<b>📊 <u>System Status</u></b>
   
-<b>👱 Total Users :</b> <code>{}</code>
-
-<b>🤖 Total Bots :</b> <code>{}</code>
-
-<b>🔃 Forwardings :</b> <code>{}</code>
+╭───────────────
+│ <b>👥 Total Users:</b> <code>{}</code>
+│ <b>🤖 Total Bots:</b> <code>{}</code>
+│ <b>🔄 Total Forwards:</b> <code>{}</code>
+╰───────────────
 """
   
-  FROM_MSG = "<b><u>Set Source Chat</></>\n\nForward The Last Message Or Last Message Link Of Source Chat.\n/cancel - To Cancel This Process"
-  TO_MSG = "<b><u>Choose Target Chat</u></b>\n\nChoose Your Target Chat From The Given Buttons.\n/cancel - To Cancel This Process"
-  SKIP_MSG = "<b><u>Set Message Skiping Number</u></b>\n\nSkip The Message As Much As You Enter The Number And The Rest Of The Message Will Be Forwarded\nDefault Skip Number = <code>0</code>\n<code>eg: You Enter 0 = 0 Message Skiped\nYou Enter 5 = 5 Message Skiped</code>\n/cancel - To Cancel This Process"
-  CANCEL = "Process Cancelled Succefully !"
-  BOT_DETAILS = "<b><u>📄 Bot Details</u></b>\n\n<b>➣ Name :</b> <code>{}</code>\n<b>➣ Bot ID :</b> <code>{}</code>\n<b>➣ Username :</b> @{}"
-  USER_DETAILS = "<b><u>📄 UserBot Details</u></b>\n\n<b>➣ Name :</b> <code>{}</code>\n<b>➣ User ID :</b> <code>{}</code>\n<b>➣ Username :</b> @{}"  
+  FROM_MSG = "<b>📥 <u>Set Source Chat</u></b>\n\nPlease forward the <b>Last Message</b> (or send its Link) from the Source Channel.\n\n<i>/cancel - To Stop</i>"
+  
+  TO_MSG = "<b>📤 <u>Choose Target Chat</u></b>\n\nSelect your destination channel from the buttons below.\n\n<i>/cancel - To Stop</i>"
+  
+  SKIP_MSG = "<b>⏭️ <u>Set Offset (Skip)</u></b>\n\nEnter the number of messages to <b>SKIP</b> from the beginning.\n\n<b>Example:</b>\n• Enter <code>0</code> = Forward everything from the start link.\n• Enter <code>100</code> = Skip first 100 messages.\n\n<i>/cancel - To Stop</i>"
+  
+  CANCEL = "<b>❌ Process Cancelled Successfully.</b>"
+  
+  BOT_DETAILS = "<b>🤖 <u>Bot Profile</u></b>\n\n<b>➢ Name:</b> <code>{}</code>\n<b>➢ ID:</b> <code>{}</code>\n<b>➢ Username:</b> @{}"
+  
+  USER_DETAILS = "<b>👤 <u>UserBot Profile</u></b>\n\n<b>➢ Name:</b> <code>{}</code>\n<b>➢ ID:</b> <code>{}</code>\n<b>➢ Username:</b> @{}"  
          
-  TEXT = """<b><u>Forward Status</u></b>
-  
-<b>🕵 Fetch Message :</b> <code>{}</code>
+  # Formatting matches the 9 placeholders used in logic
+  TEXT = """<b>🚀 <u>Forwarding In Progress</u></b>
 
-<b>✅ Successfully Forward :</b> <code>{}</code>
-
-<b>👥 Dublicate Message :</b> <code>{}</code>
-
-<b>🗑 Deleted Message :</b> <code>{}</code>
-
-<b>🪆 Skipped Message :</b> <code>{}</code>
-
-<b>🔁 Filtered Message :</b> <code>{}</code>
-
-<b>📊 Current Status :</b> <code>{}</code>
-
-<b>🔥 Percentage :</b> <code>{}</code> %
+<b>╭── [ 📊 Live Stats ]</b>
+<b>│</b>
+<b>├ 📂 Fetched:</b> <code>{}</code>
+<b>├ ✅ Forwarded:</b> <code>{}</code>
+<b>├ 👥 Duplicates:</b> <code>{}</code>
+<b>├ 🗑️ Deleted:</b> <code>{}</code>
+<b>├ ⏩ Skipped:</b> <code>{}</code>
+<b>├ 🛡️ Filtered:</b> <code>{}</code>
+<b>│</b>
+<b>├ 📡 Status:</b> <code>{}</code>
+<b>╰── 🔥 Progress:</b> <code>{}</code>%
 
 {}
 """
 
-  TEXT1 = """<b><u>Forwarded Status</u></b>
+  # Formatting matches the 9 placeholders used in logic
+  TEXT1 = """<b>✅ <u>Task Completed</u></b>
 
-<b>🕵 Fetched Message :</b> <code>{}</code>
-
-<b>✅ Successfully Forward :</b> <code>{}</code>
-
-<b>👥 Dublicate Message :</b> <code>{}</code>
-
-<b>🗑 Deleted Message :</b> <code>{}</code>
-
-<b>🪆 Skipped :</b> <code>{}</code>
-
-<b>📊 Stats :</b> <code>{}</code>
-
-<b>⏳ Progress :</b> <code>{}</code>
-
-<b>⏰ ETA :</b> <code>{}</code>
+<b>╭── [ 📊 Final Report ]</b>
+<b>│</b>
+<b>├ 📂 Total Fetched:</b> <code>{}</code>
+<b>├ ✅ Successfully Forwarded:</b> <code>{}</code>
+<b>├ 👥 Duplicates Found:</b> <code>{}</code>
+<b>├ 🗑️ Deleted:</b> <code>{}</code>
+<b>├ ⏩ Skipped:</b> <code>{}</code>
+<b>│</b>
+<b>├ 📡 Status:</b> <code>{}</code>
+<b>├ ⏳ Total Time:</b> <code>{}</code>
+<b>╰── 🏁 ETA:</b> <code>{}</code>
 
 {}"""
 
-  DUPLICATE_TEXT = """<b><u>Unequify Status</u></b>
+  DUPLICATE_TEXT = """<b>🗑️ <u>Duplicate Removal</u></b>
 
-<b>🕵 Fetched Files :</b> <code>{}</code>
-
-<b>👥 Dublicate Deleted :</b> <code>{}</code>
+<b>╭── [ 🧹 Cleaning Chat ]</b>
+<b>│</b>
+<b>├ 📂 Scanned Messages:</b> <code>{}</code>
+<b>├ 🗑️ Deleted Duplicates:</b> <code>{}</code>
+<b>╰────────────────</b>
 
 {}
 """
-  DOUBLE_CHECK = """<b><u>Double Checking</u></b>
+
+  DOUBLE_CHECK = """<b>🛡️ <u>Final Verification</u></b>
   
-Before Forwarding The Messages Click The Yes Button Only After Checking The Following
+Please review the details below before starting the task.
 
-<b>★ Your Bot :</b> [{botname}](t.me/{botuname})
-<b>★ From Channel :</b> <code>{from_chat}<>
-<b>★ To Channel :</b> <code>{to_chat}</code>
-<b>★ Skip Messages :</b> <code>{skip}</code>
+<b>🤖 Active Bot:</b> [{botname}](t.me/{botuname})
+<b>📥 Source:</b> <code>{from_chat}</code>
+<b>📤 Destination:</b> <code>{to_chat}</code>
+<b>⏭️ Skip Offset:</b> <code>{skip}</code>
 
-<i>° [{botname}](t.me/{botuname}) Must Be Admin In <b>Target Chat</b></i> (<code>{to_chat}</code>)
-<i>° If The <b>Source Chat</b> Is Private Your Userbot Must Be Member Or Your Bot Must Be Admin In There Also</i>
+<b>⚠️ Requirements Check:</b>
+1. [{botname}](t.me/{botuname}) is an <b>ADMIN</b> in the Target Chat (<code>{to_chat}</code>).
+2. If Source is <b>Private</b>, your Userbot is a member there.
 
-<b>If The Above Is Checked Then The Yes Button Can Be Clicked</b>"""
-
-
-
-
-
-
-
-
-
-
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
-# Developer @JishuDeveloper
+<b>Does everything look correct?</b>"""
+  
