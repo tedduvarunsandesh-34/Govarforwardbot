@@ -1,18 +1,18 @@
 {
   "name": "Ultra Forward Bot",
-  "description": "Telegram Ultra Forward Bot ",
+  "description": "Ultra Fast Telegram Forward Bot (10x Speed, Duplicate Remover, Batching)",
   "logo": "https://graph.org/file/2f461540c83b362772714.jpg",
-  "keywords": ["Auto Renamer Bot", "Mongo DB"],    
-  "repository": "https://github.com/JishuDeveloper/Ultra-Forward-Bot",
+  "keywords": ["Telegram", "Forwarder", "Python", "Pyrogram", "Batching", "Fast"],
+  "repository": "https://github.com/LastPerson07/Ultra-Forward-Bot",
   "success_url": "https://t.me/Madflix_Bots",
   "env": {
       "API_ID": {
-          "description": "Your APP ID From my.telegram.org ",
+          "description": "Your APP ID From my.telegram.org",
           "value": "",
           "required": true
       },
       "API_HASH": {
-          "description": "Your API Hash From my.telegram.org ",
+          "description": "Your API Hash From my.telegram.org",
           "value": "",
           "required": true
       },
@@ -22,22 +22,22 @@
           "required": true
       },
       "OWNER_ID": {
-          "description":"Add Your User ID multiple is use space to split",
+          "description": "Add Your User ID (Space separated if multiple)",
           "value": "",
           "required": true
       },
       "BOT_SESSION": {
-          "description":"Your Bot session name.",
+          "description": "Your Bot session name.",
           "value": "forward-bot",
-          "required": false           
+          "required": false
       },
       "DB_URL": {
-          "description": "Your Mongo DB URL Obtained From mongodb.com",
+          "description": "Your Mongo DB URL From mongodb.com",
           "value": "",
           "required": true
       },
-      "DB_NAME":{ 
-          "description":"Your Mongo DB Database Name",
+      "DB_NAME": {
+          "description": "Your Mongo DB Database Name",
           "value": "madflixbotz",
           "required": false
       }
@@ -45,9 +45,10 @@
   "buildpacks": [
       {
           "url": "heroku/python"
+      },
+      {
+          "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
       }
   ]
 }
-
-
 
