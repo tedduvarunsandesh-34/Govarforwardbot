@@ -4,9 +4,6 @@
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
-
-
-
 import os
 import sys
 import asyncio 
@@ -27,8 +24,6 @@ main_buttons = [[
         InlineKeyboardButton('🧑‍💻 Developer 🧑‍💻', url='https://t.me/CallAdminRobot')
         ]]
 
-
-
 #===================Start Function===================#
 
 @Client.on_message(filters.private & filters.command(['start']))
@@ -36,18 +31,18 @@ async def start(client, message):
     user = message.from_user
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
+    
     reply_markup = InlineKeyboardMarkup(main_buttons)
-    jishubotz = await message.reply_sticker("CAACAgUAAxkBAAECEEBlLA-nYcsWmsNWgE8-xqIkriCWAgACJwEAAsiUZBTiPWKAkUSmmh4E")
-    await asyncio.sleep(2)
-    await jishubotz.delete()
-    text=Translation.START_TXT.format(user.mention)
+    
+    # OPTIMIZATION: Removed the 2-second sleep and sticker for instant response
+    text = Translation.START_TXT.format(user.mention)
+    
     await message.reply_text(
         text=text,
         reply_markup=reply_markup,
-        quote=True
+        quote=True,
+        disable_web_page_preview=True
     )
-
-
 
 #==================Restart Function==================#
 
@@ -57,12 +52,10 @@ async def restart(client, message):
         text="<i>Trying To Restarting.....</i>",
         quote=True
     )
-    await asyncio.sleep(5)
+    await asyncio.sleep(1) # Reduced sleep from 5s to 1s
     await msg.edit("<i>Server Restarted Successfully ✅</i>")
     os.execl(sys.executable, sys.executable, *sys.argv)
     
-
-
 #==================Callback Functions==================#
 
 @Client.on_callback_query(filters.regex(r'^help'))
@@ -80,8 +73,6 @@ async def helpcb(bot, query):
             ]]
         ))
 
-
-
 @Client.on_callback_query(filters.regex(r'^how_to_use'))
 async def how_to_use(bot, query):
     await query.message.edit_text(
@@ -90,8 +81,6 @@ async def how_to_use(bot, query):
         disable_web_page_preview=True
     )
 
-
-
 @Client.on_callback_query(filters.regex(r'^back'))
 async def back(bot, query):
     reply_markup = InlineKeyboardMarkup(main_buttons)
@@ -99,8 +88,6 @@ async def back(bot, query):
        reply_markup=reply_markup,
        text=Translation.START_TXT.format(
                 query.from_user.first_name))
-
-
 
 @Client.on_callback_query(filters.regex(r'^about'))
 async def about(bot, query):
@@ -111,26 +98,19 @@ async def about(bot, query):
         parse_mode=enums.ParseMode.HTML,
     )
 
-
-
 @Client.on_callback_query(filters.regex(r'^status'))
 async def status(bot, query):
     users_count, bots_count = await db.total_users_bots_count()
     total_channels = await db.total_channels()
+    
+    # FIX: Ensure we display the COUNT of banned users, not the list object itself
+    # This prevents errors if temp.BANNED_USERS is a list [123, 456]
+    banned_count = len(temp.BANNED_USERS) if isinstance(temp.BANNED_USERS, list) else temp.BANNED_USERS
+    
     await query.message.edit_text(
-        text=Translation.STATUS_TXT.format(users_count, bots_count, temp.forwardings, total_channels, temp.BANNED_USERS ),
+        text=Translation.STATUS_TXT.format(users_count, bots_count, temp.forwardings, total_channels, banned_count),
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('🔙 Back', callback_data='help')]]),
         parse_mode=enums.ParseMode.HTML,
         disable_web_page_preview=True,
     )
-    
-
-
-
-
-
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
-# Developer @JishuDeveloper
+        
