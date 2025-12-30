@@ -4,17 +4,9 @@
 # Backup Channel @JishuBotz
 # Developer @JishuDeveloper
 
-
-
 from os import environ 
 from config import Config
 import motor.motor_asyncio
-from pymongo import MongoClient
-
-async def mongodb_version():
-    x = MongoClient(Config.DB_URL)
-    mongodb_version = x.server_info()['version']
-    return mongodb_version
 
 class Database:
     
@@ -28,7 +20,7 @@ class Database:
         
     def new_user(self, id, name):
         return dict(
-            id = id,
+            id = int(id),
             name = name,
             ban_status=dict(
                 is_banned=False,
@@ -37,11 +29,12 @@ class Database:
         )
       
     async def add_user(self, id, name):
-        user = self.new_user(id, name)
-        await self.col.insert_one(user)
+        user = self.new_user(int(id), name)
+        # Use update_one with upsert=True to avoid duplicate errors
+        await self.col.update_one({'id': int(id)}, {'$set': user}, upsert=True)
     
     async def is_user_exist(self, id):
-        user = await self.col.find_one({'id':int(id)})
+        user = await self.col.find_one({'id': int(id)})
         return bool(user)
     
     async def total_users_bots_count(self):
@@ -58,21 +51,21 @@ class Database:
             is_banned=False,
             ban_reason=''
         )
-        await self.col.update_one({'id': id}, {'$set': {'ban_status': ban_status}})
+        await self.col.update_one({'id': int(id)}, {'$set': {'ban_status': ban_status}})
     
     async def ban_user(self, user_id, ban_reason="No Reason"):
         ban_status = dict(
             is_banned=True,
             ban_reason=ban_reason
         )
-        await self.col.update_one({'id': user_id}, {'$set': {'ban_status': ban_status}})
+        await self.col.update_one({'id': int(user_id)}, {'$set': {'ban_status': ban_status}})
 
     async def get_ban_status(self, id):
         default = dict(
             is_banned=False,
             ban_reason=''
         )
-        user = await self.col.find_one({'id':int(id)})
+        user = await self.col.find_one({'id': int(id)})
         if not user:
             return default
         return user.get('ban_status', default)
@@ -115,7 +108,7 @@ class Database:
                'sticker': True
             }
         }
-        user = await self.col.find_one({'id':int(id)})
+        user = await self.col.find_one({'id': int(id)})
         if user:
             return user.get('configs', default)
         return default 
@@ -128,11 +121,11 @@ class Database:
        await self.bot.delete_many({'user_id': int(user_id)})
       
     async def get_bot(self, user_id: int):
-       bot = await self.bot.find_one({'user_id': user_id})
+       bot = await self.bot.find_one({'user_id': int(user_id)})
        return bot if bot else None
                                           
     async def is_bot_exist(self, user_id):
-       bot = await self.bot.find_one({'user_id': user_id})
+       bot = await self.bot.find_one({'user_id': int(user_id)})
        return bool(bot)
                                           
     async def in_channel(self, user_id: int, chat_id: int) -> bool:
@@ -143,7 +136,7 @@ class Database:
        channel = await self.in_channel(user_id, chat_id)
        if channel:
          return False
-       return await self.chl.insert_one({"user_id": user_id, "chat_id": chat_id, "title": title, "username": username})
+       return await self.chl.insert_one({"user_id": int(user_id), "chat_id": int(chat_id), "title": title, "username": username})
     
     async def remove_channel(self, user_id: int, chat_id: int):
        channel = await self.in_channel(user_id, chat_id )
@@ -160,8 +153,10 @@ class Database:
      
     async def get_filters(self, user_id):
        filters = []
-       filter = (await self.get_configs(user_id))['filters']
-       for k, v in filter.items():
+       config_data = await self.get_configs(user_id)
+       filter_settings = config_data.get('filters', {})
+       
+       for k, v in filter_settings.items():
           if v == False:
             filters.append(str(k))
        return filters
@@ -177,16 +172,4 @@ class Database:
        return self.nfy.find({})
      
 db = Database(Config.DB_URL, Config.DB_NAME)
-
-
-
-
-
-
-
-
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Backup Channel @JishuBotz
-# Developer @JishuDeveloper
+        
