@@ -15,7 +15,7 @@ class Config:
     DB_NAME = os.environ.get("DB_NAME", "filetolink")
     
     # NEW: Worker Count (Default to 50 for 10x Speed)
-    WORKERS = int(os.environ.get("WORKERS", 50))
+    WORKERS = int(os.environ.get("WORKERS", 10))
 
     # Safe Owner ID Parsing
     owner = os.environ.get("OWNER_ID", "")
