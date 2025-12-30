@@ -28,8 +28,15 @@ BOT_TOKEN_TEXT = "1) Create A Bot Using @BotFather\n\n2) Then You Will Get A Mes
 SESSION_STRING_SIZE = 351
 
 async def start_clone_bot(FwdBot, data=None):
-   await FwdBot.start()
-   #
+   try:
+       # FIX: Added Timeout. If bot doesn't connect in 20s, it stops instead of freezing.
+       await asyncio.wait_for(FwdBot.start(), timeout=20)
+   except asyncio.TimeoutError:
+       raise Exception("⚠️ Connection Timed Out!\n\nYour **Session String** or **Bot Token** might be invalid, expired, or your server IP is blocked by Telegram.\n\nPlease try generating a new Session/Token and update it in /settings.")
+   except Exception as e:
+       raise Exception(f"⚠️ Login Failed: {e}")
+
+   # Define the iterator function
    async def iter_messages(
       self, 
       chat_id: Union[int, str], 
@@ -48,7 +55,8 @@ async def start_clone_bot(FwdBot, data=None):
             for message in messages:
                 yield message
                 current += 1
-   #
+   
+   # Attach iterator to the bot instance
    FwdBot.iter_messages = iter_messages
    return FwdBot
 
@@ -59,8 +67,7 @@ class CLIENT:
     
   def client(self, data, user=None):
      # --- SPEED OPTIMIZATION: High Workers & Max Concurrent Transmissions ---
-     # Using Config.WORKERS allows you to control speed from config.py
-     worker_count = getattr(Config, 'WORKERS', 50) # Default to 50 if not set
+     worker_count = getattr(Config, 'WORKERS', 50)
      
      if user == None and data.get('is_bot') == False:
         return Client(
@@ -111,8 +118,8 @@ class CLIENT:
      try:
        _client = await start_clone_bot(self.client(bot_token, False), True)
      except Exception as e:
-       await msg.reply_text(f"Bot Error :</b> `{e}`")
-       return # Stop execution if bot fails to start
+       await msg.reply_text(f"<b>Bot Error :</b> `{e}`")
+       return 
        
      _bot = _client.me
      details = {
