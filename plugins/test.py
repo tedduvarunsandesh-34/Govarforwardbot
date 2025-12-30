@@ -20,20 +20,29 @@ from pyrogram.errors import FloodWait
 from translation import Translation
 from typing import Union, Optional, AsyncGenerator
 
+# --- DEBUG LOGGING ENABLED ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
 BOT_TOKEN_TEXT = "1) Create A Bot Using @BotFather\n\n2) Then You Will Get A Message With Bot Token\n\n3) Forward That Message To Me"
 SESSION_STRING_SIZE = 351
 
 async def start_clone_bot(FwdBot, data=None):
+   logger.info("DEBUG: Entering start_clone_bot function...")
    try:
-       # FIX: Added Timeout. If bot doesn't connect in 20s, it stops instead of freezing.
-       await asyncio.wait_for(FwdBot.start(), timeout=20)
+       logger.info("DEBUG: Attempting to Connect to Telegram Servers...")
+       # FIX: Added 25s Timeout. If it hangs here, it means IP is blocked or Session is invalid.
+       await asyncio.wait_for(FwdBot.start(), timeout=25)
+       logger.info("DEBUG: Connection Successful! Client started.")
    except asyncio.TimeoutError:
-       raise Exception("⚠️ Connection Timed Out!\n\nYour **Session String** or **Bot Token** might be invalid, expired, or your server IP is blocked by Telegram.\n\nPlease try generating a new Session/Token and update it in /settings.")
+       logger.error("DEBUG: Connection Timed Out! (Telegram did not respond)")
+       raise Exception("⚠️ Connection Timed Out!\n\nPossible Causes:\n1. Your Server IP is blocked by Telegram.\n2. The Session String/Token is invalid.\n3. Telegram is asking for 2FA Password.")
    except Exception as e:
+       logger.error(f"DEBUG: Connection Failed with error: {e}")
        raise Exception(f"⚠️ Login Failed: {e}")
 
    # Define the iterator function
@@ -116,6 +125,7 @@ class CLIENT:
        return await msg.reply_text("There Is No Bot Token In That Message")
      
      try:
+       logger.info("DEBUG: Initializing Bot Client...")
        _client = await start_clone_bot(self.client(bot_token, False), True)
      except Exception as e:
        await msg.reply_text(f"<b>Bot Error :</b> `{e}`")
@@ -130,7 +140,16 @@ class CLIENT:
        'token': bot_token,
        'username': _bot.username 
      }
-     await db.add_bot(details)
+     
+     logger.info("DEBUG: Saving Bot to Database...")
+     try:
+         await asyncio.wait_for(db.add_bot(details), timeout=10)
+         logger.info("DEBUG: Saved successfully.")
+     except asyncio.TimeoutError:
+         logger.error("DEBUG: Database Timeout! Check MongoDB Whitelist.")
+         await msg.reply_text("<b>Error:</b> Database Timeout! Please check your MongoDB IP Whitelist.")
+         return
+         
      return True
     
   async def add_session(self, bot, message):
@@ -143,6 +162,7 @@ class CLIENT:
      elif len(msg.text) < SESSION_STRING_SIZE:
         return await msg.reply('Invalid Session String')
      try:
+       logger.info("DEBUG: Initializing Userbot Session...")
        client = await start_clone_bot(self.client(msg.text, True), True)
      except Exception as e:
        await msg.reply_text(f"<b>User Bot Error :</b> `{e}`")
@@ -157,7 +177,16 @@ class CLIENT:
        'session': msg.text,
        'username': user.username
      }
-     await db.add_bot(details)
+     
+     logger.info("DEBUG: Saving Session to Database...")
+     try:
+         await asyncio.wait_for(db.add_bot(details), timeout=10)
+         logger.info("DEBUG: Saved successfully.")
+     except asyncio.TimeoutError:
+         logger.error("DEBUG: Database Timeout! Check MongoDB Whitelist.")
+         await msg.reply_text("<b>Error:</b> Database Timeout! Please check your MongoDB IP Whitelist.")
+         return
+         
      return True
 
 @Client.on_message(filters.private & filters.command('reset'))
@@ -226,4 +255,4 @@ def parse_buttons(text, markup=True):
     if markup and buttons:
        buttons = InlineKeyboardMarkup(buttons)
     return buttons if buttons else None
-   
+
