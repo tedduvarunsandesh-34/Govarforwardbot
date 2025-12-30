@@ -20,7 +20,7 @@ from pyrogram.errors import FloodWait
 from translation import Translation
 from typing import Union, Optional, AsyncGenerator
 
-# --- DEBUG LOGGING ENABLED ---
+# Debug Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -32,17 +32,12 @@ BOT_TOKEN_TEXT = "1) Create A Bot Using @BotFather\n\n2) Then You Will Get A Mes
 SESSION_STRING_SIZE = 351
 
 async def start_clone_bot(FwdBot, data=None):
-   logger.info("DEBUG: Entering start_clone_bot function...")
    try:
-       logger.info("DEBUG: Attempting to Connect to Telegram Servers...")
-       # FIX: Added 25s Timeout. If it hangs here, it means IP is blocked or Session is invalid.
-       await asyncio.wait_for(FwdBot.start(), timeout=25)
-       logger.info("DEBUG: Connection Successful! Client started.")
+       # FIX: 20s Timeout to prevent infinite freezing
+       await asyncio.wait_for(FwdBot.start(), timeout=20)
    except asyncio.TimeoutError:
-       logger.error("DEBUG: Connection Timed Out! (Telegram did not respond)")
-       raise Exception("⚠️ Connection Timed Out!\n\nPossible Causes:\n1. Your Server IP is blocked by Telegram.\n2. The Session String/Token is invalid.\n3. Telegram is asking for 2FA Password.")
+       raise Exception("⚠️ Connection Timed Out! (Server frozen or IP blocked)")
    except Exception as e:
-       logger.error(f"DEBUG: Connection Failed with error: {e}")
        raise Exception(f"⚠️ Login Failed: {e}")
 
    # Define the iterator function
@@ -54,7 +49,6 @@ async def start_clone_bot(FwdBot, data=None):
       search: str = None,
       filter: "types.TypeMessagesFilter" = None,
       ) -> Optional[AsyncGenerator["types.Message", None]]:
-        """Iterate through a chat sequentially."""
         current = offset
         while True:
             new_diff = min(200, limit - current)
@@ -65,7 +59,6 @@ async def start_clone_bot(FwdBot, data=None):
                 yield message
                 current += 1
    
-   # Attach iterator to the bot instance
    FwdBot.iter_messages = iter_messages
    return FwdBot
 
@@ -75,8 +68,10 @@ class CLIENT:
      self.api_hash = Config.API_HASH
     
   def client(self, data, user=None):
-     # --- SPEED OPTIMIZATION: High Workers & Max Concurrent Transmissions ---
-     worker_count = getattr(Config, 'WORKERS', 50)
+     # --- CRITICAL FIX FOR "VERIFYING" FREEZE ---
+     # When adding/verifying a session, we MUST use workers=1.
+     # Using 50 workers here crashes the server before login completes.
+     # The high worker count will be used later during actual forwarding.
      
      if user == None and data.get('is_bot') == False:
         return Client(
@@ -84,8 +79,8 @@ class CLIENT:
             self.api_id, 
             self.api_hash, 
             session_string=data.get('session'),
-            workers=worker_count, 
-            max_concurrent_transmissions=10
+            workers=1,  # <--- CHANGED TO 1 (Safe Mode)
+            max_concurrent_transmissions=1
         )
      elif user == True:
         return Client(
@@ -93,8 +88,8 @@ class CLIENT:
             self.api_id, 
             self.api_hash, 
             session_string=data,
-            workers=worker_count, 
-            max_concurrent_transmissions=10
+            workers=1,  # <--- CHANGED TO 1 (Safe Mode)
+            max_concurrent_transmissions=1
         )
      elif user != False:
         data = data.get('token')
@@ -105,8 +100,8 @@ class CLIENT:
          self.api_hash, 
          bot_token=data, 
          in_memory=True,
-         workers=worker_count, 
-         max_concurrent_transmissions=10
+         workers=1,  # <--- CHANGED TO 1 (Safe Mode)
+         max_concurrent_transmissions=1
      )
 
   async def add_bot(self, bot, message):
@@ -117,7 +112,6 @@ class CLIENT:
      elif not msg.forward_date:
        return await msg.reply_text("This Is Not A Forward Message")
      
-     # Regex to extract token
      bot_token = re.findall(r'\d[0-9]{8,10}:[0-9A-Za-z_-]{35}', msg.text, re.IGNORECASE)
      bot_token = bot_token[0] if bot_token else None
      
@@ -125,7 +119,6 @@ class CLIENT:
        return await msg.reply_text("There Is No Bot Token In That Message")
      
      try:
-       logger.info("DEBUG: Initializing Bot Client...")
        _client = await start_clone_bot(self.client(bot_token, False), True)
      except Exception as e:
        await msg.reply_text(f"<b>Bot Error :</b> `{e}`")
@@ -140,29 +133,20 @@ class CLIENT:
        'token': bot_token,
        'username': _bot.username 
      }
-     
-     logger.info("DEBUG: Saving Bot to Database...")
-     try:
-         await asyncio.wait_for(db.add_bot(details), timeout=10)
-         logger.info("DEBUG: Saved successfully.")
-     except asyncio.TimeoutError:
-         logger.error("DEBUG: Database Timeout! Check MongoDB Whitelist.")
-         await msg.reply_text("<b>Error:</b> Database Timeout! Please check your MongoDB IP Whitelist.")
-         return
-         
+     await db.add_bot(details)
      return True
     
   async def add_session(self, bot, message):
      user_id = int(message.from_user.id)
-     text = "<b>⚠️ Disclaimer ⚠️</b>\n\nYou Can Use Your Session For Forward Message From Private Chat To Another Chat.\nPlease Add Your Pyrogram Session With Your Own Risk. Their Is A Chance To Ban Your Account. My Developer Is Not Responsible If Your Account May Get Banned."
+     text = "<b>⚠️ Disclaimer ⚠️</b>\n\nYou Can Use Your Session For Forward Message From Private Chat To Another Chat.\nPlease Add Your Pyrogram Session With Your Own Risk."
      await bot.send_message(user_id, text=text)
-     msg = await bot.ask(chat_id=user_id, text="<b>Send your pyrogram session.\nget it from @mdsessiongenbot\n\n/cancel - cancel the process</b>")
+     msg = await bot.ask(chat_id=user_id, text="<b>Send your pyrogram session.\n/cancel - cancel the process</b>")
      if msg.text=='/cancel':
         return await msg.reply('Process Cancelled !')
      elif len(msg.text) < SESSION_STRING_SIZE:
         return await msg.reply('Invalid Session String')
      try:
-       logger.info("DEBUG: Initializing Userbot Session...")
+       # This will now use workers=1 so it won't freeze!
        client = await start_clone_bot(self.client(msg.text, True), True)
      except Exception as e:
        await msg.reply_text(f"<b>User Bot Error :</b> `{e}`")
@@ -177,16 +161,7 @@ class CLIENT:
        'session': msg.text,
        'username': user.username
      }
-     
-     logger.info("DEBUG: Saving Session to Database...")
-     try:
-         await asyncio.wait_for(db.add_bot(details), timeout=10)
-         logger.info("DEBUG: Saved successfully.")
-     except asyncio.TimeoutError:
-         logger.error("DEBUG: Database Timeout! Check MongoDB Whitelist.")
-         await msg.reply_text("<b>Error:</b> Database Timeout! Please check your MongoDB IP Whitelist.")
-         return
-         
+     await db.add_bot(details)
      return True
 
 @Client.on_message(filters.private & filters.command('reset'))
@@ -255,4 +230,4 @@ def parse_buttons(text, markup=True):
     if markup and buttons:
        buttons = InlineKeyboardMarkup(buttons)
     return buttons if buttons else None
-
+    
