@@ -1,93 +1,88 @@
-<img src="https://graph.org/file/7f7dcc89135e7d6c64bbb.jpg" alt="logo" target="/blank">
-
 <h1 align="center">
- <b><a href="https://t.me/MadflixForwardBot" target="/blank"> Ultra Forward Bot </a></>
+  <img src="https://graph.org/file/7f7dcc89135e7d6c64bbb.jpg" alt="Logo" width="250">
+  <br>
+  <b>🚀 Ultra Forward Bot</b>
 </h1>
 
-<p align="center">🩵 Thanks for Being Here 🩵</p>
-
-
-### CONFIGS VARIABLES
-
-* `BOT_TOKEN` - Get bot token from <a href="https://t.me/BotFather" target="/blank">Bot Father</a>
-* `API_ID` - Get api id from <a href="https://my.telegram.org" target="/blank">Telegram Auth</a>
-* `API_HASH` - Get api hash from <a href="https://my.telegram.org" target="/blank">Telegram Auth</a>
-* `OWNER_ID` - Bot admin/owner user id.
-* `DATABASE_URI` - Mongo Database URL from <a href="https://cloud.mongodb.com" target="/blank">Mongo DB</a>
-* `DATABASE_NAME` - Your database name from mongoDB. (Optional)
-* `BOT_SESSION` - Your Bot session name. (Optional)
-
-
-
-### DEPLOYEMENT SUPPORT
-
-<summary>Deploy To Koyeb</summary>
-<p>
-<br>                 
-<a target="/blank" href="https://app.koyeb.com/deploy?type=git&repository=github.com/JishuDeveloper/Ultra-Forward-Bot&branch=main&name=ultra-forward-bot" >
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy">
-</a>
+<p align="center">
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  </a>
+  <a href="https://docs.pyrogram.org/">
+    <img src="https://img.shields.io/badge/Pyrogram-v2.0-orange?style=for-the-badge&logo=telegram&logoColor=white" alt="Pyrogram">
+  </a>
+  <a href="https://github.com/LastPerson07/Ultra-Forward-Bot">
+    <img src="https://img.shields.io/badge/Repo-GitHub-black?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+  </a>
 </p>
 
-<summary>Deploy To Heroku</summary>
-<p>
-<br>
-<a href="https://heroku.com/deploy?template=https://github.com/JishuDeveloper/Ultra-Forward-Bot">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
-</a>
+<p align="center">
+  <b>A powerful, high-speed Telegram bot to forward bulk messages from public or private channels to your own channel with 10x speed, duplicate removal, and custom captions.</b>
 </p>
 
+<hr>
 
+### ⚡ Features
 
+| Feature | Description |
+| :--- | :--- |
+| 🚀 **Ultra Fast** | 10x Speed using concurrent batch processing. |
+| 🔁 **Auto Forward** | Forward from Public & Private Channels (Userbot). |
+| 🧹 **Clean Chat** | Skip duplicates & remove existing duplicates. |
+| 📝 **Customization** | Set custom captions & inline buttons. |
+| 🛡️ **Protection** | Supports restricted content forwarding. |
+| 🎛️ **Filtering** | Filter by File Type, Keywords, Extension, or Size. |
+| 🌍 **Deployment** | Ready for Heroku, Koyeb, Railway, and VPS. |
 
+---
 
-### FEATURES
- - Forward Message From Public Channel To Your Channel.
- - Forward Message From Private Channel To Your Channel.
- - Supports Broadcasts.
- - Set custom caption.
- - Custom Button.
- - Support Restricted Chats.
- - Skip Duplicate Messages.
- - Filter Type Of Messages.
- - Skip Messages Based On Extensions & Keywords & Size.
- - Deploy to Koyeb + Heroku + Railway.
- - Developer Service 24x7.
+### 🛠️ Configuration Variables
 
+| Variable | Description | Required |
+| :--- | :--- | :---: |
+| `API_ID` | Get this from [my.telegram.org](https://my.telegram.org) | ✅ |
+| `API_HASH` | Get this from [my.telegram.org](https://my.telegram.org) | ✅ |
+| `BOT_TOKEN` | Get this from [@BotFather](https://t.me/BotFather) | ✅ |
+| `OWNER_ID` | Your Telegram User ID (for admin control). | ✅ |
+| `DB_URL` | MongoDB Connection String from [MongoDB Atlas](https://cloud.mongodb.com). | ✅ |
+| `DB_NAME` | Name of your Database (Default: `madflixbotz`). | ❌ |
+| `BOT_SESSION` | Session name for the bot (Default: `forward-bot`). | ❌ |
 
+---
 
-### ALL COMMANDS
+### 🚀 Deployment
 
-```
-start - Start the bot.
-forward - Forward messages.
-unequify - Delete dublicate files in channel.
-settings - Configure your settings.
-ping - To check bot ping.
-cancel - Cancel ongoing forwarding.
-reset - To reset all settings.
-donate - To support developer.
-stats - To check bot stats (Admin Only)
-resetall - To reset all user settings. (Admin Only)
-broadcast - To broadcast any message to all users (Admin Only)
-restart - Restart the bot (Admin Only)
-```
+Click a button below to deploy your own instance of **Ultra Forward Bot**.
 
+<p align="center">
+  <a href="https://app.koyeb.com/deploy?type=git&repository=github.com/LastPerson07/Ultra-Forward-Bot&branch=main&name=ultra-forward-bot">
+    <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" width="200">
+  </a>
+  <br><br>
+  <a href="https://heroku.com/deploy?template=https://github.com/LastPerson07/Ultra-Forward-Bot">
+    <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" width="200">
+  </a>
+</p>
 
+---
 
-### ❤️ RESPECTING ❤️
-- [JishuDeveloper](https://github.com/JishuDeveloper)
-- [Madflix Official](https://github.com/jishusinha)
+### 🤖 Bot Commands
 
-### 😍 BOTS CHANNEL 😍
-- [Madflix Botz](https://t.me/Madflix_Bots)
-- [Jishu Botz](https://t.me/JishuBotz)
+| Command | Description |
+| :--- | :--- |
+| `/start` | Check if the bot is alive. |
+| `/forward` | Start a forwarding task. |
+| `/unequify` | Remove duplicate messages in a channel. |
+| `/settings` | Configure Userbot, Channels, and Filters. |
+| `/cancel` | Stop the current forwarding task. |
+| `/reset` | Reset your personal settings. |
+| `/stats` | Check bot statistics (Admin Only). |
+| `/broadcast` | Broadcast a message to all users (Admin Only). |
+| `/restart` | Restart the bot server (Admin Only). |
 
-### 💕 CONTACT DEVELOPER 💕
-- [Jishu Developer](https://t.me/JishuDeveloper)
-- [Madflix Official](https://t.me/MadflixOfficials)
+---
 
-### ☕ BUY ME A COFFEE ☕
-- [PayPal](https://paypal.me/jishudeveloper/2.50USD)
-- [PhonePe](https://graph.org/file/6822df5af3a2e80637172.jpg)
-- [UPI](https://graph.org/file/b831109be4acff5c966d2.jpg)
+<p align="center">
+  <b>Made with ❤️ by <a href="https://github.com/LastPerson07">LastPerson07</a></b>
+</p>
+
