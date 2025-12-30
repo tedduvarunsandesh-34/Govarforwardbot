@@ -59,14 +59,16 @@ class CLIENT:
     
   def client(self, data, user=None):
      # --- SPEED OPTIMIZATION: High Workers & Max Concurrent Transmissions ---
-     # This is CRITICAL for the batching engine to work fast.
+     # Using Config.WORKERS allows you to control speed from config.py
+     worker_count = getattr(Config, 'WORKERS', 50) # Default to 50 if not set
+     
      if user == None and data.get('is_bot') == False:
         return Client(
             "USERBOT", 
             self.api_id, 
             self.api_hash, 
             session_string=data.get('session'),
-            workers=50, 
+            workers=worker_count, 
             max_concurrent_transmissions=10
         )
      elif user == True:
@@ -75,7 +77,7 @@ class CLIENT:
             self.api_id, 
             self.api_hash, 
             session_string=data,
-            workers=50, 
+            workers=worker_count, 
             max_concurrent_transmissions=10
         )
      elif user != False:
@@ -87,7 +89,7 @@ class CLIENT:
          self.api_hash, 
          bot_token=data, 
          in_memory=True,
-         workers=50, 
+         workers=worker_count, 
          max_concurrent_transmissions=10
      )
 
@@ -98,14 +100,14 @@ class CLIENT:
         return await msg.reply('Process Cancelled !')
      elif not msg.forward_date:
        return await msg.reply_text("This Is Not A Forward Message")
-     # Removed strict BotFather ID check to allow users to forward from other clients/web
-     # elif str(msg.forward_from.id) != "93372553":
-     #   return await msg.reply_text("This Message Was Not Forward From Bot Father")
      
+     # Regex to extract token
      bot_token = re.findall(r'\d[0-9]{8,10}:[0-9A-Za-z_-]{35}', msg.text, re.IGNORECASE)
      bot_token = bot_token[0] if bot_token else None
+     
      if not bot_token:
        return await msg.reply_text("There Is No Bot Token In That Message")
+     
      try:
        _client = await start_clone_bot(self.client(bot_token, False), True)
      except Exception as e:
@@ -217,4 +219,4 @@ def parse_buttons(text, markup=True):
     if markup and buttons:
        buttons = InlineKeyboardMarkup(buttons)
     return buttons if buttons else None
-                   
+   
