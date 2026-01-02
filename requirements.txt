@@ -1,6 +1,7 @@
 pyrofork
+Flask
 motor
-TgCrypto
-Dnspython
+tgcrypto
+dnspython
 aiohttp
 pytz
