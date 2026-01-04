@@ -24,6 +24,8 @@ class Config:
     
     # --- Channel & Storage Logic ---
     BIN_CHANNEL = int(os.environ.get("BIN_CHANNEL", -1003656791142)) 
+
+    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", -1003656791142))
     
     # --- Performance ---
     TG_WORKERS = int(os.environ.get("TG_WORKERS", "4")) 
