@@ -9,7 +9,7 @@
 
 import re, asyncio
 from database import db
-from config import temp
+from config import Temp as temp
 from .test import CLIENT , start_clone_bot
 from translation import Translation
 from pyrogram import Client, filters 
