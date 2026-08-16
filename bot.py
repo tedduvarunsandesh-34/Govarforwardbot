@@ -46,9 +46,9 @@ class Bot(Client):
         text = "**Bot Restarted !**"
         logging.info(text)
         success = failed = 0
-        users = await db.get_all_frwd()
+        users = await db.get_all_users()
         async for user in users:
-           chat_id = user['user_id']
+           chat_id = user['id']
            try:
               await self.send_message(chat_id, text)
               success += 1
