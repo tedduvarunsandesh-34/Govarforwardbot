@@ -16,6 +16,7 @@ class Config:
     DB_URL = os.environ.get("DB_URL", "mongodb+srv://teddugovardhan544_db_user:WVjIA96jQ31net0j@cluster0.kwkkleo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     DB_NAME = os.environ.get("DB_NAME", "Govarforwardbot")
     OWNER_ID = [int(id) for id in os.environ.get("OWNER_ID", '8669891756').split()]
+    START_PIC = os.environ.get("START_PIC", "https://graph.org/file/8f7782e7f7517eea2d586-81d32ef554501fb2de.jpg")
 
 
 class temp(object): 
