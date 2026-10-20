@@ -18,13 +18,13 @@ from pyrogram import Client, filters, enums, __version__ as pyrogram_version
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaDocument
 
 main_buttons = [[
-        InlineKeyboardButton('📢 Updates', url='https://t.me/Madflix_Bots'),
-        InlineKeyboardButton('💬 Support', url='https://t.me/MadflixBots_Support')
+        InlineKeyboardButton('📢 Updates', url='https://t.me/Govar_arena_botzz'),
+        InlineKeyboardButton('💬 Support', url='https://t.me/Govar_arena_botzz')
         ],[
         InlineKeyboardButton('🛠️ Help', callback_data='help'),
         InlineKeyboardButton('🩷 About', callback_data='about')
         ],[
-        InlineKeyboardButton('🧑‍💻 Developer 🧑‍💻', url='https://t.me/CallAdminRobot')
+        InlineKeyboardButton('🧑‍💻 Developer 🧑‍💻', url='https://t.me/Govar_arena_botzz')
         ]]
 
 
@@ -41,11 +41,19 @@ async def start(client, message):
     await asyncio.sleep(2)
     await jishubotz.delete()
     text=Translation.START_TXT.format(user.mention)
-    await message.reply_text(
-        text=text,
-        reply_markup=reply_markup,
-        quote=True
-    )
+    if Config.START_PIC:
+        await message.reply_photo(
+            photo=Config.START_PIC,
+            caption=text,
+            reply_markup=reply_markup,
+            quote=True
+        )
+    else:
+        await message.reply_text(
+            text=text,
+            reply_markup=reply_markup,
+            quote=True
+        )
 
 
 

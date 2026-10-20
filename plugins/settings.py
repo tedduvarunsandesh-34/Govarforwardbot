@@ -420,6 +420,9 @@ def main_buttons():
        InlineKeyboardButton('🔥 Channels',
                     callback_data=f'settings#channels')
        ],[
+       InlineKeyboardButton('🔑 Set Session String',
+                    callback_data=f'settings#adduserbot')
+       ],[
        InlineKeyboardButton('✏️ Caption',
                     callback_data=f'settings#caption'),
        InlineKeyboardButton('🗃 MongoDB',

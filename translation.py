@@ -27,6 +27,7 @@ class Translation(object):
 <b><u>📚 Available Commands :</u></b>
 ⏣ __/start - Check I'm Alive__ 
 ⏣ __/forward - Forward Messages__
+⏣ __/forward_by_usingsession - Forward Messages Using Session String__
 ⏣ __/unequify - Delete Duplicate Messages In Channels__
 ⏣ __/settings - Configure Your Settings__
 ⏣ __/reset - Reset Your Settings__
